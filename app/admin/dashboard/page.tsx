@@ -44,6 +44,8 @@ interface RecentMessage {
 }
 
 export default function AdminDashboard() {
+  console.log("AdminDashboard component loaded");
+
   const [user, setUser] = useState<any>(null);
   const [stats, setStats] = useState<DashboardStats>({
     totalMessages: 0,
@@ -57,16 +59,103 @@ export default function AdminDashboard() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string>("");
   const [isSupabaseConnected, setIsSupabaseConnected] = useState(false);
+  const [realtimeStatus, setRealtimeStatus] = useState<string>("Disconnected");
   const router = useRouter();
 
   useEffect(() => {
     initializeDashboard();
+
+    // Écouter les changements d'état d'authentification
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange(async (event, session) => {
+      console.log("Auth state change:", event, session);
+
+      if (event === "SIGNED_OUT" || !session) {
+        router.push("/admin/login");
+      } else if (event === "SIGNED_IN" && session) {
+        // Rafraîchir les données si l'utilisateur vient de se connecter
+        await initializeDashboard();
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, [router]);
+
+  // Auto-refresh system for dashboard data
+  useEffect(() => {
+    console.log("🔄 Setting up auto-refresh system...");
+
+    const refreshData = async () => {
+      try {
+        // Récupérer les messages récents pour détecter de nouveaux messages
+        const { data: currentMessages, error } = await supabase
+          .from("contact_messages")
+          .select("*")
+          .order("created_at", { ascending: false })
+          .limit(5);
+
+        if (error) {
+          console.error("Error fetching messages:", error);
+          return;
+        }
+
+        if (currentMessages && currentMessages.length > 0) {
+          setRecentMessages((prevMessages) => {
+            // Vérifier s'il y a de nouveaux messages
+            const hasNewMessage =
+              prevMessages.length === 0 ||
+              currentMessages[0].id !== prevMessages[0]?.id;
+
+            if (hasNewMessage) {
+              console.log("🆕 New message detected, updating stats...");
+
+              // Recharger toutes les statistiques quand un nouveau message est détecté
+              loadDashboardStats();
+            }
+
+            return currentMessages;
+          });
+        }
+
+        setRealtimeStatus("Connected");
+      } catch (error) {
+        console.error("Auto-refresh error:", error);
+        setRealtimeStatus("Error");
+      }
+    };
+
+    // Rafraîchir immédiatement puis toutes les 3 secondes
+    refreshData();
+    const refreshInterval = setInterval(refreshData, 3000);
+
+    return () => {
+      clearInterval(refreshInterval);
+    };
   }, []);
 
   const initializeDashboard = async () => {
     try {
       setIsLoading(true);
       setError("");
+
+      // Vérifier la session d'authentification
+      const {
+        data: { session },
+        error: sessionError,
+      } = await supabase.auth.getSession();
+
+      if (sessionError) {
+        console.error("Erreur de session:", sessionError);
+        router.push("/admin/login");
+        return;
+      }
+
+      if (!session) {
+        console.log("Aucune session trouvée, redirection vers login");
+        router.push("/admin/login");
+        return;
+      }
 
       // Vérifier la connexion Supabase
       const connectionTest = await testSupabaseConnection();
@@ -100,20 +189,33 @@ export default function AdminDashboard() {
 
   const testSupabaseConnection = async (): Promise<boolean> => {
     try {
+      console.log("🔍 Testing Supabase connection...");
+
       // Test simple de connexion
       const { data, error } = await supabase
         .from("contact_messages")
         .select("id")
         .limit(1);
 
-      return !error;
+      if (error) {
+        console.error("❌ Supabase connection test failed:", error);
+        return false;
+      }
+
+      console.log("✅ Supabase connection test successful");
+
+      // Test de la configuration real-time
+      const realtimeStatus = supabase.realtime.isConnected();
+      console.log("Real-time connection status:", realtimeStatus);
+
+      return true;
     } catch (error) {
       console.error("Test de connexion Supabase échoué:", error);
       return false;
     }
   };
 
-  const loadDashboardData = async () => {
+  const loadDashboardStats = async () => {
     try {
       // Charger les statistiques avec gestion d'erreur pour chaque requête
       const statsPromises = [
@@ -142,6 +244,16 @@ export default function AdminDashboard() {
       };
 
       setStats(newStats);
+      console.log("📊 Dashboard stats updated:", newStats);
+    } catch (error) {
+      console.error("Erreur lors du chargement des stats:", error);
+    }
+  };
+
+  const loadDashboardData = async () => {
+    try {
+      // Charger les statistiques
+      await loadDashboardStats();
 
       // Charger les messages récents
       await loadRecentMessages();
@@ -275,6 +387,16 @@ export default function AdminDashboard() {
     }
   };
 
+  const handleRefresh = async () => {
+    console.log("🔄 Manual refresh triggered");
+    setIsLoading(true);
+    try {
+      await loadDashboardData();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const exportMessages = async () => {
     try {
       const { data, error } = await supabase
@@ -315,12 +437,16 @@ export default function AdminDashboard() {
 
       // Télécharger le fichier
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `messages_contact_${
-        new Date().toISOString().split("T")[0]
-      }.csv`;
-      link.click();
+
+      // Manipulation du DOM sécurisée (côté client uniquement)
+      if (typeof document !== "undefined") {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `messages_contact_${
+          new Date().toISOString().split("T")[0]
+        }.csv`;
+        link.click();
+      }
     } catch (error) {
       console.error("Erreur lors de l'export:", error);
       alert("Erreur lors de l'export des messages");
@@ -386,27 +512,56 @@ export default function AdminDashboard() {
                 <h1 className="text-xl font-bold text-gray-900 dark:text-white">
                   Tableau de bord KN Web Agency
                 </h1>
-                <p className="text-sm text-muted-foreground">
-                  Connecté en tant que {user?.email}
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>Connecté en tant que {user?.email}</span>
                   {isSupabaseConnected && (
                     <Badge
                       variant="secondary"
-                      className="ml-2 bg-green-100 text-green-800"
+                      className="bg-green-100 text-green-800"
                     >
                       Supabase connecté
                     </Badge>
                   )}
-                </p>
+                  <Badge
+                    variant={
+                      realtimeStatus === "SUBSCRIBED" ? "default" : "outline"
+                    }
+                    className={`${
+                      realtimeStatus === "SUBSCRIBED"
+                        ? "bg-blue-100 text-blue-800"
+                        : realtimeStatus === "CHANNEL_ERROR"
+                        ? "bg-orange-100 text-orange-800"
+                        : "bg-gray-100 text-gray-800"
+                    }`}
+                  >
+                    {realtimeStatus === "SUBSCRIBED"
+                      ? "🔴 Real-time"
+                      : realtimeStatus === "CHANNEL_ERROR"
+                      ? "🔄 Polling"
+                      : "⚪ Offline"}
+                  </Badge>
+                </div>
               </div>
             </div>
-            <Button
-              onClick={handleLogout}
-              variant="outline"
-              className="flex items-center gap-2 bg-transparent"
-            >
-              <LogOut className="w-4 h-4" />
-              Déconnexion
-            </Button>
+            <div className="flex items-center gap-3">
+              <Button
+                onClick={handleRefresh}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <RefreshCw className="w-4 h-4" />
+                Actualiser
+              </Button>
+              <Button
+                onClick={handleLogout}
+                variant="outline"
+                className="flex items-center gap-2 bg-transparent"
+              >
+                <LogOut className="w-4 h-4" />
+                Déconnexion
+              </Button>
+            </div>
           </div>
         </div>
       </header>

@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Eye, EyeOff, Lock, Mail, AlertCircle, Loader2 } from "lucide-react";
-import { signIn, getCurrentUser } from "@/lib/auth";
+import { signIn } from "@/lib/auth";
 
 export default function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -19,26 +19,19 @@ export default function AdminLogin() {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [isCheckingAuth, setIsCheckingAuth] = useState(true);
+  const [returnUrl, setReturnUrl] = useState("/admin/dashboard");
   const router = useRouter();
 
+  // Récupérer seulement l'URL de retour, pas de vérification d'auth automatique
   useEffect(() => {
-    checkExistingAuth();
-  }, []);
-
-  const checkExistingAuth = async () => {
-    try {
-      const user = await getCurrentUser();
-      if (user) {
-        router.push("/admin/dashboard");
-        return;
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      const returnUrlParam = params.get("returnUrl");
+      if (returnUrlParam) {
+        setReturnUrl(returnUrlParam);
       }
-    } catch (error) {
-      console.error("Erreur vérification auth:", error);
-    } finally {
-      setIsCheckingAuth(false);
     }
-  };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,13 +39,37 @@ export default function AdminLogin() {
     setError("");
 
     try {
-      const result = await signIn(email, password);
-      const user = result.user;
+      console.log("Tentative de connexion via API...");
 
-      if (user) {
-        router.push("/admin/dashboard");
+      // Utiliser l'endpoint API pour la connexion
+      const response = await fetch("/api/auth/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const result = await response.json();
+
+      if (!response.ok) {
+        throw new Error(result.error || "Erreur de connexion");
+      }
+
+      if (result.success && result.user) {
+        console.log("Connexion réussie pour:", result.user.email);
+        console.log("Session créée côté serveur");
+
+        // Attendre un moment pour que les cookies côté serveur soient pris en compte
+        await new Promise((resolve) => setTimeout(resolve, 500));
+
+        console.log("Redirection vers:", returnUrl);
+
+        // Utiliser window.location.href pour forcer un rechargement complet
+        // avec les nouveaux cookies de session
+        window.location.href = returnUrl;
       } else {
-        setError("Échec de la connexion");
+        setError("Échec de la connexion - réponse invalide du serveur");
       }
     } catch (error: any) {
       console.error("Erreur de connexion:", error);
@@ -70,19 +87,6 @@ export default function AdminLogin() {
       setIsLoading(false);
     }
   };
-
-  if (isCheckingAuth) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900">
-        <div className="text-center">
-          <Loader2 className="w-8 h-8 animate-spin text-purple-600 mx-auto mb-4" />
-          <p className="text-muted-foreground">
-            Vérification de l'authentification...
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 to-blue-50 dark:from-purple-950/20 dark:to-blue-950/20 p-4">

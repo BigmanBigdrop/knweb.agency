@@ -175,12 +175,16 @@ export default function AdminMessages() {
       ].join("\n");
 
       const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
-      const link = document.createElement("a");
-      link.href = URL.createObjectURL(blob);
-      link.download = `messages_${
-        filterType !== "all" ? filterType + "_" : ""
-      }${format(new Date(), "yyyy-MM-dd")}.csv`;
-      link.click();
+
+      // Manipulation du DOM sécurisée (côté client uniquement)
+      if (typeof document !== "undefined") {
+        const link = document.createElement("a");
+        link.href = URL.createObjectURL(blob);
+        link.download = `messages_${
+          filterType !== "all" ? filterType + "_" : ""
+        }${format(new Date(), "yyyy-MM-dd")}.csv`;
+        link.click();
+      }
     } catch (error) {
       console.error("Erreur export:", error);
       alert("Erreur lors de l'export");

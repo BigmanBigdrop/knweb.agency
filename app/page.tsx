@@ -1,34 +1,48 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { ArrowRight, Code, Smartphone, Zap, Users, Award, TrendingUp, Sparkles } from "lucide-react"
-import { EnhancedCard } from "@/components/ui/enhanced-card"
-import { FloatingElements } from "@/components/ui/floating-elements"
-import { CTAButton } from "@/components/cta-button"
-import Link from "next/link"
-import AnimatedCounter from "@/components/animated-counter"
-import SVGAnimation from "@/components/svg-animation"
-import { supabase } from "@/lib/supabase"
+import { useState, useEffect } from "react";
+import { motion } from "framer-motion";
+import {
+  ArrowRight,
+  Code,
+  Smartphone,
+  Zap,
+  Users,
+  Award,
+  TrendingUp,
+  Sparkles,
+} from "lucide-react";
+import { EnhancedCard } from "@/components/ui/enhanced-card";
+import { FloatingElements } from "@/components/ui/floating-elements";
+import { CTAButton } from "@/components/cta-button";
+import Link from "next/link";
+import AnimatedCounter from "@/components/animated-counter";
+import SVGAnimation from "@/components/svg-animation";
+import { supabase } from "@/lib/supabase";
+import { useCTATracking } from "@/components/analytics-tracker";
 
 export default function HomePage() {
-  const [remainingSlots, setRemainingSlots] = useState(9)
+  const [remainingSlots, setRemainingSlots] = useState();
+  const { trackCTAClick } = useCTATracking();
 
   useEffect(() => {
     const fetchRemainingSlots = async () => {
       try {
-        const { data, error } = await supabase.from("starter_offer_slots").select("remaining_slots").single()
+        const { data, error } = await supabase
+          .from("starter_offer_slots")
+          .select("remaining_slots")
+          .single();
 
         if (data && !error) {
-          setRemainingSlots(data.remaining_slots)
+          setRemainingSlots(data.remaining_slots);
         }
       } catch (error) {
-        console.error("Error fetching remaining slots:", error)
+        console.error("Error fetching remaining slots:", error);
       }
-    }
+    };
 
-    fetchRemainingSlots()
-  }, [])
+    fetchRemainingSlots();
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-purple-50/30 to-blue-50/30 dark:from-background dark:via-purple-950/20 dark:to-blue-950/20 relative overflow-hidden">
@@ -807,11 +821,11 @@ export default function HomePage() {
                   90 000 FCFA
                 </span>
                 <span className="text-5xl font-bold font-heading">
-                  49 000 FCFA
+                  49 900 FCFA
                 </span>
               </div>
               <p className="text-xl opacity-90">
-                Pour les 10 premières entreprises seulement
+                Pour les 5 premières entreprises seulement
               </p>
               <div className="inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full backdrop-blur-sm">
                 <span className="font-medium">
@@ -849,8 +863,8 @@ export default function HomePage() {
               🌍 Notre Zone d'Intervention en Afrique de l'Ouest
             </h2>
             <p className="text-xl text-muted-foreground max-w-3xl mx-auto">
-              Agence basée à Abidjan, nous servons toute la Côte d'Ivoire et
-              les pays francophones de la région
+              Agence basée à Abidjan, nous servons toute la Côte d'Ivoire et les
+              pays francophones de la région
             </p>
           </motion.div>
 
@@ -999,7 +1013,7 @@ export default function HomePage() {
                 className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 group"
               >
                 <Link className="flex flex-row" href="/contact">
-                  <span>💬 Devis Gratuit 24h</span>
+                  <span>Devis Gratuit 24h</span>
                   <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </Link>
               </CTAButton>

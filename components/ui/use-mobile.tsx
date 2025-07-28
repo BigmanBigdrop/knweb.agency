@@ -1,19 +1,9 @@
-import * as React from "react"
+// Ce fichier est dupliqué et ne devrait pas être utilisé
+// Importez plutôt le hook depuis @/hooks/use-mobile.tsx
 
-const MOBILE_BREAKPOINT = 768
+import { useIsMobile as useIsMobileHook } from "@/hooks/use-mobile";
 
+// Re-export pour maintenir la compatibilité
 export function useIsMobile() {
-  const [isMobile, setIsMobile] = React.useState<boolean | undefined>(undefined)
-
-  React.useEffect(() => {
-    const mql = window.matchMedia(`(max-width: ${MOBILE_BREAKPOINT - 1}px)`)
-    const onChange = () => {
-      setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    }
-    mql.addEventListener("change", onChange)
-    setIsMobile(window.innerWidth < MOBILE_BREAKPOINT)
-    return () => mql.removeEventListener("change", onChange)
-  }, [])
-
-  return !!isMobile
+  return useIsMobileHook();
 }

@@ -6,14 +6,18 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { useTheme } from "next-themes"; // 
-
-import { da } from "date-fns/locale";
+import { useTheme } from "next-themes";
 
 export default function Header() {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  // Set mounted to true after component mounts to prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -47,7 +51,7 @@ export default function Header() {
     { href: "/contact", label: "Contact" },
   ];
 
-  const { theme, resolvedTheme } = useTheme(); 
+  const { theme, resolvedTheme } = useTheme();
 
   return (
     <AnimatePresence>
@@ -67,10 +71,22 @@ export default function Header() {
             <div className="flex items-center justify-between h-16">
               {/* Logo */}
               <Link href="/" className="flex items-center">
-                {resolvedTheme === "dark" ? (
-                  <img src="/logo-white.png" alt="Logo dark" className="h-28 w-28" />
+                {mounted ? (
+                  resolvedTheme === "dark" ? (
+                    <img
+                      src="/logo-white.png"
+                      alt="Logo dark"
+                      className="h-28 w-28"
+                    />
+                  ) : (
+                    <img
+                      src="/logo-dark.png"
+                      alt="Logo light"
+                      className="h-28 w-28"
+                    />
+                  )
                 ) : (
-                  <img src="/logo-dark.png" alt="Logo light" className="h-28 w-28" />
+                  <div className="h-28 w-28" />
                 )}
               </Link>
 
