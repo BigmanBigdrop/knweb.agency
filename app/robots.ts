@@ -14,7 +14,7 @@ export default function robots(): MetadataRoute.Robots {
         disallow: ["/admin/", "/api/", "/private/"],
       },
     ],
-    sitemap: "https://knweb.agency/sitemap.xml",
-    host: "https://knweb.agency",
+    sitemap: "https://www.knweb.agency/sitemap.xml",
+    host: "https://www.knweb.agency",
   };
 }
