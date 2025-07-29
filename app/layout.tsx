@@ -51,7 +51,7 @@ export const metadata: Metadata = {
     "site responsive Abidjan",
     "hébergement web Côte d'Ivoire",
   ],
-  authors: [{ name: "KN Web Agency", url: "https://knweb.agency" }],
+  authors: [{ name: "KN Web Agency", url: "https://www.knweb.agency" }],
   creator: "KN Web Agency",
   publisher: "KN Web Agency",
   category: "Technology",
@@ -61,7 +61,7 @@ export const metadata: Metadata = {
     address: false,
     telephone: false,
   },
-  metadataBase: new URL("https://knweb.agency"),
+  metadataBase: new URL("https://www.knweb.agency"),
   alternates: {
     canonical: "/",
     languages: {
@@ -72,7 +72,7 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "fr_CI",
-    url: "https://knweb.agency",
+    url: "https://www.knweb.agency",
     siteName: "KN Web Agency",
     title: "KN Web Agency - Agence Web #1 à Abidjan, Côte d'Ivoire",
     description:
