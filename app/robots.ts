@@ -5,12 +5,12 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
+        allow: ["/", "/sitemap.xml"],
         disallow: ["/admin/", "/api/", "/_next/", "/private/", "*.json"],
       },
       {
         userAgent: "Googlebot",
-        allow: "/",
+        allow: ["/", "/sitemap.xml"],
         disallow: ["/admin/", "/api/", "/private/"],
       },
     ],
