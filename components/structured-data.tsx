@@ -23,8 +23,8 @@ export default function StructuredData({
           legalName: "KN Web Agency",
           description:
             "Agence web leader en Côte d'Ivoire spécialisée dans la création de sites web modernes et solutions digitales pour PME.",
-          url: "https://knweb.agency",
-          logo: "https://knweb.agency/logo.png",
+          url: "https://www.knweb.agency",
+          logo: "https://www.knweb.agency/logo-dark.png",
           contactPoint: {
             "@type": "ContactPoint",
             telephone: "+225-XX-XX-XX-XX",
@@ -53,11 +53,11 @@ export default function StructuredData({
         return {
           ...baseData,
           "@type": "LocalBusiness",
-          "@id": "https://knweb.agency",
+          "@id": "https://www.knweb.agency",
           name: "KN Web Agency",
           description:
             "Agence web #1 à Abidjan pour la création de sites internet et solutions digitales.",
-          url: "https://knweb.agency",
+          url: "https://www.knweb.agency",
           telephone: "+225-XX-XX-XX-XX",
           email: "contact@knweb.agency",
           address: {
@@ -88,7 +88,7 @@ export default function StructuredData({
           ...baseData,
           "@type": "WebSite",
           name: "KN Web Agency",
-          url: "https://knweb.agency",
+          url: "https://www.knweb.agency",
           description:
             "Site officiel de KN Web Agency - Agence web leader en Côte d'Ivoire",
           publisher: {

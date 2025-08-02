@@ -6,7 +6,12 @@
     "build": "next build",
     "dev": "next dev",
     "lint": "next lint",
-    "start": "next start"
+    "start": "next start",
+    "ping-search-engines": "node scripts/ping-search-engines.js",
+    "seo-check": "node scripts/seo-check.js",
+    "seo-audit": "node scripts/seo-audit.js",
+    "security-audit": "node scripts/security-audit.js",
+    "full-audit": "npm run security-audit && npm run seo-audit"
   },
   "dependencies": {
     "@emotion/is-prop-valid": "latest",

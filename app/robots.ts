@@ -5,13 +5,20 @@ export default function robots(): MetadataRoute.Robots {
     rules: [
       {
         userAgent: "*",
-        allow: "/",
+        allow: ["/", "/sitemap.xml"],
         disallow: ["/admin/", "/api/", "/_next/", "/private/", "*.json"],
       },
       {
         userAgent: "Googlebot",
-        allow: "/",
+        allow: ["/", "/sitemap.xml"],
         disallow: ["/admin/", "/api/", "/private/"],
+        crawlDelay: 1,
+      },
+      {
+        userAgent: "Bingbot",
+        allow: ["/", "/sitemap.xml"],
+        disallow: ["/admin/", "/api/", "/private/"],
+        crawlDelay: 1,
       },
     ],
     sitemap: "https://www.knweb.agency/sitemap.xml",
