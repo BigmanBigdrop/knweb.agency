@@ -128,6 +128,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   verification: {
     google: "dtuNrnloo4nfQAdR1vvUY9RuzvNbfsh0-q7qAzdgEIo",
+    bing:"0AE24A45880A6D3338868D805DA88F53",
     yandex: "votre-code-yandex",
     yahoo: "votre-code-yahoo",
   },
