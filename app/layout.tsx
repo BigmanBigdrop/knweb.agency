@@ -1,4 +1,5 @@
 import type React from "react";
+import Head from "next/head";
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
@@ -148,6 +149,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" suppressHydrationWarning>
+     <Head>
+    <meta name="msvalidate.01" content="0AE24A45880A6D3338868D805DA88F53" />
+  </Head>
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} ${plusJakarta.variable} antialiased`}
       >
