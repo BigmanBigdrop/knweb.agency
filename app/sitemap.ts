@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap():  Promise<MetadataRoute.Sitemap> {
   const baseUrl = "https://www.knweb.agency";
   const currentDate = new Date().toISOString();
 
