@@ -3,8 +3,8 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { logger } from "@/lib/helpers";
 
-// Liste des emails admin autorisés
-const ADMIN_EMAILS = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(',').map(email => email.trim().toLowerCase()) || [];
+// Liste des emails admin autorisés (utilise variable serveur pour plus de sécurité)
+const ADMIN_EMAILS = process.env.ADMIN_EMAILS?.split(',').map(email => email.trim().toLowerCase()) || [];
 
 export default async function proxy(req: NextRequest) {
   let supabaseResponse = NextResponse.next({
