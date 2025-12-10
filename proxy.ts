@@ -6,7 +6,7 @@ import { logger } from "@/lib/helpers";
 // Liste des emails admin autorisés
 const ADMIN_EMAILS = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(',').map(email => email.trim().toLowerCase()) || [];
 
-export async function middleware(req: NextRequest) {
+export default async function proxy(req: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request: req,
   });
@@ -38,7 +38,7 @@ export async function middleware(req: NextRequest) {
       data: { session },
     } = await supabase.auth.getSession();
 
-    logger.info("Middleware", {
+    logger.info("Proxy", {
       url: req.nextUrl.pathname,
       hasSession: !!session,
       user: session?.user?.email || "No user",
@@ -51,7 +51,7 @@ export async function middleware(req: NextRequest) {
       !req.nextUrl.pathname.includes("/unauthorized")
     ) {
       if (!session) {
-        logger.info("Middleware - Redirecting to login (no session)");
+        logger.info("Proxy - Redirecting to login (no session)");
         // Stocker l'URL originale pour redirection après connexion réussie
         const redirectUrl = new URL("/admin/login", req.url);
 
@@ -68,13 +68,13 @@ export async function middleware(req: NextRequest) {
       const isAdmin = ADMIN_EMAILS.length === 0 || (userEmail && ADMIN_EMAILS.includes(userEmail));
 
       if (!isAdmin) {
-        logger.warn(`Middleware - Access denied for non-admin user: ${userEmail}`);
+        logger.warn(`Proxy - Access denied for non-admin user: ${userEmail}`);
         return NextResponse.redirect(new URL("/admin/unauthorized", req.url));
       }
 
-      logger.info("Middleware - Access granted (admin verified)");
+      logger.info("Proxy - Access granted (admin verified)");
     } else if (req.nextUrl.pathname === "/admin/login" && session) {
-      logger.info("Middleware - Redirecting authenticated user from login");
+      logger.info("Proxy - Redirecting authenticated user from login");
       // Si l'utilisateur est déjà connecté et essaie d'accéder à la page de login, le rediriger vers le dashboard
       const returnUrl =
         req.nextUrl.searchParams.get("returnUrl") || "/admin/dashboard";
@@ -83,7 +83,7 @@ export async function middleware(req: NextRequest) {
 
     return supabaseResponse;
   } catch (error) {
-    logger.error("Middleware error", { error });
+    logger.error("Proxy error", { error });
     return supabaseResponse;
   }
 }
