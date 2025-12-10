@@ -10,38 +10,81 @@ import {
   Users,
   Award,
   TrendingUp,
-  Sparkles,
+  Database,
+  Cpu,
 } from "lucide-react";
 import { EnhancedCard } from "@/components/ui/enhanced-card";
 import { FloatingElements } from "@/components/ui/floating-elements";
 import { CTAButton } from "@/components/cta-button";
 import Link from "next/link";
 import AnimatedCounter from "@/components/animated-counter";
-import SVGAnimation from "@/components/svg-animation";
 import { supabase } from "@/lib/supabase";
-import { useCTATracking } from "@/components/analytics-tracker";
 
 export default function HomePage() {
-  const [remainingSlots, setRemainingSlots] = useState();
-  const { trackCTAClick } = useCTATracking();
+  const [isLoading, setIsLoading] = useState(true);
+  const [remainingSlots, setRemainingSlots] = useState<number | null>(null);
+  const [stats, setStats] = useState({
+    projects_completed: 0,
+    satisfied_clients: 0,
+    years_experience: 0,
+    technologies_used: 0,
+  });
+  const [pricing, setPricing] = useState({
+    starter_original_price: 0,
+    starter_current_price: 0,
+    starter_total_slots: 0,
+  });
 
   useEffect(() => {
-    const fetchRemainingSlots = async () => {
+    const fetchData = async () => {
       try {
-        const { data, error } = await supabase
+        setIsLoading(true);
+
+        // Fetch slots
+        const { data: slotsData, error: slotsError } = await supabase
           .from("starter_offer_slots")
           .select("remaining_slots")
+          .eq("id", 1)
           .single();
 
-        if (data && !error) {
-          setRemainingSlots(data.remaining_slots);
+        if (slotsError) {
+          console.error("❌ Erreur chargement slots:", slotsError);
+        } else if (slotsData) {
+          console.log("✅ Slots chargés:", slotsData.remaining_slots);
+          setRemainingSlots(slotsData.remaining_slots);
+        }
+
+        // Fetch site settings for stats and pricing
+        const { data: settingsData, error: settingsError } = await supabase
+          .from("site_settings")
+          .select("stats_projects_completed, stats_satisfied_clients, stats_years_experience, stats_technologies_used, starter_original_price, starter_current_price, starter_total_slots")
+          .eq("id", 1)
+          .single();
+
+        if (settingsError) {
+          console.error("❌ Erreur chargement site_settings:", settingsError);
+        } else if (settingsData) {
+          console.log("✅ Données site_settings chargées:", settingsData);
+          setStats({
+            projects_completed: settingsData.stats_projects_completed,
+            satisfied_clients: settingsData.stats_satisfied_clients,
+            years_experience: settingsData.stats_years_experience,
+            technologies_used: settingsData.stats_technologies_used,
+          });
+          setPricing({
+            starter_original_price: settingsData.starter_original_price,
+            starter_current_price: settingsData.starter_current_price,
+            starter_total_slots: settingsData.starter_total_slots,
+          });
         }
       } catch (error) {
-        console.error("Error fetching remaining slots:", error);
+        console.error("❌ Erreur générale:", error);
+      } finally {
+        setIsLoading(false);
       }
     };
 
-    fetchRemainingSlots();
+    fetchData();
   }, []);
 
   return (
@@ -186,16 +229,16 @@ export default function HomePage() {
                 accessibles.
               </motion.p>
 
-              {/* Badge Mobile */}
+              {/* Badge Spécialisation */}
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
                 transition={{ duration: 0.6, delay: 0.6 }}
-                className="inline-flex items-center gap-3 bg-gradient-to-r from-orange-50 to-red-100 dark:from-orange-900/30 dark:to-red-900/30 px-4 py-3 rounded-xl border border-orange-200 dark:border-orange-800"
+                className="inline-flex items-center gap-3 bg-gradient-to-r from-green-50 to-emerald-100 dark:from-green-900/30 dark:to-emerald-900/30 px-4 py-3 rounded-xl border border-green-200 dark:border-green-800"
               >
-                <Smartphone className="w-5 h-5 text-green-700" />
-                <span className="text-lime-500 dark:text-orange-300 font-medium text-sm md:text-base">
-                  Développement mobile - Disponible très bientôt !
+                <Zap className="w-5 h-5 text-green-700" />
+                <span className="text-green-700 dark:text-green-300 font-medium text-sm md:text-base">
+                  Spécialiste des solutions métier pour PME
                 </span>
               </motion.div>
 
@@ -655,21 +698,26 @@ export default function HomePage() {
               {
                 icon: Users,
                 label: "Clients satisfaits",
-                value: 10,
+                value: stats.satisfied_clients,
                 suffix: "+",
               },
-              { icon: Code, label: "Projets réalisés", value: 15, suffix: "+" },
+              {
+                icon: Code,
+                label: "Projets réalisés",
+                value: stats.projects_completed,
+                suffix: "+"
+              },
               {
                 icon: Award,
                 label: "Années d'expérience",
-                value: 1,
+                value: stats.years_experience,
                 suffix: "",
               },
               {
                 icon: TrendingUp,
-                label: "Taux de satisfaction",
-                value: 85,
-                suffix: "%",
+                label: "Technologies utilisées",
+                value: stats.technologies_used,
+                suffix: "+",
               },
             ].map((stat, index) => (
               <motion.div
@@ -717,8 +765,8 @@ export default function HomePage() {
               {
                 title: "Sites Vitrines",
                 description:
-                  "Sites web élégants et performants pour présenter votre entreprise",
-                icon: "🌐",
+                  "Sites web élégants et performants pour présenter votre entreprise au monde",
+                Icon: Code,
                 color: "from-purple-500 to-purple-600",
                 gradient:
                   "from-purple-50 to-purple-100 dark:from-purple-950/20 dark:to-purple-900/20",
@@ -726,19 +774,19 @@ export default function HomePage() {
               {
                 title: "Applications Web",
                 description:
-                  "Solutions web sur mesure pour optimiser vos processus métier",
-                icon: "⚡",
+                  "Outils de gestion sur-mesure - CRM, gestion de stock, systèmes RH, plateformes métier",
+                Icon: Zap,
                 color: "from-blue-500 to-blue-600",
                 gradient:
                   "from-blue-50 to-blue-100 dark:from-blue-950/20 dark:to-blue-900/20",
               },
               {
-                title: "Mobile (Bientôt)",
-                description: "Applications mobiles natives pour iOS et Android",
-                icon: "📱",
-                color: "from-amber-500 to-amber-600",
+                title: "Plateformes Digitales",
+                description: "Solutions complètes pour digitaliser votre activité - E-commerce, réservation, formation en ligne",
+                Icon: Database,
+                color: "from-green-500 to-green-600",
                 gradient:
-                  "from-amber-50 to-amber-100 dark:from-amber-950/20 dark:to-amber-900/20",
+                  "from-green-50 to-green-100 dark:from-green-950/20 dark:to-green-900/20",
               },
             ].map((service, index) => (
               <motion.div
@@ -756,9 +804,9 @@ export default function HomePage() {
                 >
                   <div className="p-8">
                     <div
-                      className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r ${service.color} rounded-2xl mb-6 text-2xl shadow-lg`}
+                      className={`inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r ${service.color} rounded-2xl mb-6 shadow-lg`}
                     >
-                      {service.icon}
+                      <service.Icon className="w-8 h-8 text-white" />
                     </div>
                     <h3 className="text-2xl font-bold mb-4 text-foreground font-heading">
                       {service.title}
@@ -816,16 +864,19 @@ export default function HomePage() {
             </h2>
 
             <div className="space-y-4">
-              <div className="flex items-center justify-center gap-4">
-                <span className="text-2xl line-through opacity-70">
-                  90 000 FCFA
-                </span>
-                <span className="text-5xl font-bold font-heading">
-                  49 900 FCFA
-                </span>
+              <div className="flex flex-col items-center justify-center gap-2">
+                <span className="text-lg opacity-80">À partir de</span>
+                <div className="flex items-center gap-4">
+                  <span className="text-2xl line-through opacity-70">
+                    {pricing.starter_original_price.toLocaleString()} FCFA
+                  </span>
+                  <span className="text-5xl font-bold font-heading">
+                    {pricing.starter_current_price.toLocaleString()} FCFA
+                  </span>
+                </div>
               </div>
               <p className="text-xl opacity-90">
-                Pour les 5 premières entreprises seulement
+                Pour les {pricing.starter_total_slots} premières entreprises seulement
               </p>
               <div className="inline-flex items-center gap-2 bg-white/20 px-4 py-2 rounded-full backdrop-blur-sm">
                 <span className="font-medium">
@@ -953,18 +1004,18 @@ export default function HomePage() {
               {
                 name: "Next.js 15",
                 color: "bg-black dark:bg-white dark:text-black text-white",
-                icon: "⚡",
+                Icon: Zap,
               },
-              { name: "React 19", color: "bg-blue-500 text-white", icon: "⚛️" },
+              { name: "React 19", color: "bg-blue-500 text-white", Icon: Code },
               {
                 name: "Supabase",
                 color: "bg-green-500 text-white",
-                icon: "🗄️",
+                Icon: Database,
               },
               {
-                name: "IA (A venir)",
-                color: "bg-purple-500 text-white",
-                icon: "🤖",
+                name: "TypeScript",
+                color: "bg-blue-600 text-white",
+                Icon: Code,
               },
             ].map((tech, index) => (
               <motion.div
@@ -976,8 +1027,8 @@ export default function HomePage() {
                 className={`${tech.color} rounded-2xl p-6 text-center font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-float group cursor-pointer`}
                 style={{ animationDelay: `${index * 0.2}s` }}
               >
-                <div className="text-2xl mb-2 group-hover:scale-110 transition-transform">
-                  {tech.icon}
+                <div className="mb-2 flex justify-center group-hover:scale-110 transition-transform">
+                  <tech.Icon className="w-8 h-8" />
                 </div>
                 <div className="text-sm font-heading">{tech.name}</div>
               </motion.div>

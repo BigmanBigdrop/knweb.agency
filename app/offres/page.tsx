@@ -27,25 +27,72 @@ import Link from "next/link";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { EnhancedCard } from "@/components/ui/enhanced-card";
 import { FloatingElements } from "@/components/ui/floating-elements";
+import { supabase } from "@/lib/supabase";
 
 export default function OffresPage() {
-  const [remainingSlots, setRemainingSlots] = useState(7);
+  const [remainingSlots, setRemainingSlots] = useState<number | null>(null);
+  const [isLoadingSlots, setIsLoadingSlots] = useState(true);
+  const [pricing, setPricing] = useState({
+    starter_original_price: 0,
+    starter_current_price: 0,
+    pro_original_price: 0,
+    pro_current_price: 0,
+  });
 
   useEffect(() => {
-    // Simuler la récupération des places restantes depuis Supabase
-    const fetchRemainingSlots = async () => {
-      // TODO: Remplacer par un vrai appel Supabase
-      setRemainingSlots(Math.floor(Math.random() * 10) + 1);
+    const fetchData = async () => {
+      try {
+        setIsLoadingSlots(true);
+
+        // Fetch slots
+        const { data: slotsData, error: slotsError } = await supabase
+          .from("starter_offer_slots")
+          .select("remaining_slots")
+          .eq("id", 1)
+          .single();
+
+        if (slotsError) {
+          console.error("❌ Erreur récupération slots:", slotsError);
+        } else if (slotsData) {
+          console.log("✅ Slots chargés (page offres):", slotsData.remaining_slots);
+          setRemainingSlots(slotsData.remaining_slots);
+        }
+
+        // Fetch pricing from site_settings
+        const { data: settingsData, error: settingsError } = await supabase
+          .from("site_settings")
+          .select("starter_original_price, starter_current_price, pro_original_price, pro_current_price")
+          .eq("id", 1)
+          .single();
+
+        if (settingsError) {
+          console.error("❌ Erreur récupération pricing:", settingsError);
+        } else if (settingsData) {
+          console.log("✅ Pricing chargé (page offres):", settingsData);
+          setPricing({
+            starter_original_price: settingsData.starter_original_price,
+            starter_current_price: settingsData.starter_current_price,
+            pro_original_price: settingsData.pro_original_price,
+            pro_current_price: settingsData.pro_current_price,
+          });
+        }
+      } catch (error) {
+        console.error("❌ Erreur générale (page offres):", error);
+      } finally {
+        setIsLoadingSlots(false);
+      }
     };
-    fetchRemainingSlots();
+
+    fetchData();
   }, []);
 
   const offers = [
     {
       name: "Starter",
       subtitle: "Parfait pour débuter",
-      originalPrice: "90 000",
-      currentPrice: "49 000",
+      originalPrice: pricing.starter_original_price.toLocaleString(),
+      currentPrice: pricing.starter_current_price.toLocaleString(),
+      pricePrefix: "À partir de",
       currency: "FCFA",
       description:
         "Site vitrine professionnel avec les fonctionnalités essentielles",
@@ -68,8 +115,9 @@ export default function OffresPage() {
     {
       name: "Pro",
       subtitle: "Pour les entreprises ambitieuses",
-      originalPrice: "199 000",
-      currentPrice: "100 000",
+      originalPrice: pricing.pro_original_price.toLocaleString(),
+      currentPrice: pricing.pro_current_price.toLocaleString(),
+      pricePrefix: "À partir de",
       currency: "FCFA",
       description: "Application web complète avec fonctionnalités avancées",
       features: [
@@ -310,6 +358,11 @@ export default function OffresPage() {
                         <p className="text-gray-600 mb-4">{offer.subtitle}</p>
 
                         <div className="space-y-2">
+                          {offer.pricePrefix && (
+                            <div className="text-center text-sm text-gray-500 font-medium">
+                              {offer.pricePrefix}
+                            </div>
+                          )}
                           {offer.originalPrice && (
                             <div className="flex items-center justify-center gap-2">
                               <span className="text-lg text-gray-500 line-through">

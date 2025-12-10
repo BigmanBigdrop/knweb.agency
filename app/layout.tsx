@@ -1,15 +1,13 @@
 import type React from "react";
-import Head from "next/head";
 import type { Metadata } from "next";
 import { Inter, Space_Grotesk, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
-import Header from "@/components/layout/header";
-import Footer from "@/components/layout/footer";
 import AnalyticsTracker from "@/components/analytics-tracker";
 import StructuredData from "@/components/structured-data";
 import { Toaster } from "@/components/ui/sonner";
 import { Suspense } from "react";
+import ConditionalLayout from "@/components/conditional-layout";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -29,11 +27,11 @@ const plusJakarta = Plus_Jakarta_Sans({
 export const metadata: Metadata = {
   title: {
     default:
-      "KN Web Agency - Agence Web #1 à Abidjan | Création Sites Internet Côte d'Ivoire",
-    template: "%s | KN Web Agency - Agence Web Abidjan",
+      "KN Web Agency - Solutions Digitales Sur-Mesure à Abidjan | Développement Web Côte d'Ivoire",
+    template: "%s | KN Web Agency",
   },
   description:
-    "🥇 Agence web leader en Côte d'Ivoire depuis 2024. Création de sites web modernes, applications mobiles et solutions e-commerce pour PME à Abidjan. Devis gratuit sous 24h ⚡ contact@knweb.agency",
+    "Partenaire digital des PME ivoiriennes. Nous transformons vos processus métier en solutions web performantes - Sites vitrines, applications de gestion, plateformes sur-mesure. Devis gratuit sous 24h - contact@knweb.agency",
   keywords: [
     "agence web Abidjan",
     "création site web Côte d'Ivoire",
@@ -75,9 +73,9 @@ export const metadata: Metadata = {
     locale: "fr_CI",
     url: "https://www.knweb.agency",
     siteName: "KN Web Agency",
-    title: "KN Web Agency - Agence Web #1 à Abidjan, Côte d'Ivoire",
+    title: "KN Web Agency - Partenaire Digital des PME à Abidjan",
     description:
-      "🥇 Agence web leader en Côte d'Ivoire. Création de sites web modernes, applications mobiles et solutions e-commerce pour PME. Devis gratuit 24h ⚡",
+      "Transformons vos processus métier en solutions web performantes. Sites vitrines, applications de gestion, plateformes sur-mesure. Devis gratuit 24h",
     images: [
       {
         url: "/og-image.jpg",
@@ -99,9 +97,9 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     site: "@knwebagency",
     creator: "@knwebagency",
-    title: "KN Web Agency - Agence Web #1 à Abidjan 🥇",
+    title: "KN Web Agency - Partenaire Digital des PME à Abidjan",
     description:
-      "Création de sites web modernes et solutions digitales en Côte d'Ivoire. Devis gratuit ⚡",
+      "Solutions web sur-mesure pour PME ivoiriennes - Sites vitrines, applications de gestion, plateformes digitales. Devis gratuit sous 24h",
     images: ["/og-image.jpg"],
   },
   robots: {
@@ -128,17 +126,16 @@ export const metadata: Metadata = {
   },
   manifest: "/manifest.json",
   verification: {
-  google: "dtuNrnloo4nfQAdR1vvUY9RuzvNbfsh0-q7qAzdgEIo",
-  bing: "0AE24A45880A6D3338868D805DA88F53",
-  yandex: "votre-code-yandex",
-  yahoo: "votre-code-yahoo",
-},
+    google: "dtuNrnloo4nfQAdR1vvUY9RuzvNbfsh0-q7qAzdgEIo",
+    yandex: "votre-code-yandex",
+  },
   other: {
     "msapplication-TileColor": "#7c3aed",
     "theme-color": "#ffffff",
     "apple-mobile-web-app-capable": "yes",
     "apple-mobile-web-app-status-bar-style": "default",
     "format-detection": "telephone=no",
+    "msvalidate.01": "0AE24A45880A6D3338868D805DA88F53",
   },
 };
 
@@ -149,9 +146,6 @@ export default function RootLayout({
 }) {
   return (
     <html lang="fr" suppressHydrationWarning>
-     <Head>
-    <meta name="msvalidate.01" content="0AE24A45880A6D3338868D805DA88F53" />
-  </Head>
       <body
         className={`${inter.variable} ${spaceGrotesk.variable} ${plusJakarta.variable} antialiased`}
       >
@@ -165,11 +159,7 @@ export default function RootLayout({
           <Suspense fallback={null}>
             <StructuredData type="Organization" />
             <StructuredData type="WebSite" />
-            <div className="min-h-screen flex flex-col">
-              <Header />
-              <main className="flex-1 pt-16">{children}</main>
-              <Footer />
-            </div>
+            <ConditionalLayout>{children}</ConditionalLayout>
             <AnalyticsTracker />
             <Toaster position="top-right" richColors />
           </Suspense>

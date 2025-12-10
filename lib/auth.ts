@@ -1,12 +1,16 @@
 import { supabase } from "./supabase";
+import type { User, Session } from "@supabase/supabase-js";
+
+// Liste des emails admin autorisés (à déplacer dans une variable d'environnement en production)
+const ADMIN_EMAILS = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(',').map(email => email.trim().toLowerCase()) || [];
 
 // Implémentation de cache simple pour réduire les appels API
-let userCache: any = null;
+let userCache: User | null = null;
 let userCacheTime: number = 0;
 const USER_CACHE_TTL = 60 * 1000; // 1 minute en millisecondes
 
 // Cache pour la session
-let sessionCache: any = null;
+let sessionCache: Session | null = null;
 let sessionCacheTime: number = 0;
 const SESSION_CACHE_TTL = 60 * 1000; // 1 minute en millisecondes
 
@@ -130,13 +134,30 @@ export const getSession = async () => {
   }
 };
 
-export const isAdmin = async () => {
+export const isAdmin = async (): Promise<boolean> => {
   try {
     const user = await getCurrentUser();
 
-    // Pour l'instant, tout utilisateur authentifié est considéré comme admin
-    // Vous pouvez ajouter une logique plus complexe ici si nécessaire
-    return !!user;
+    if (!user || !user.email) {
+      return false;
+    }
+
+    // Vérifier si l'email de l'utilisateur est dans la liste des admins autorisés
+    const userEmail = user.email.toLowerCase();
+
+    // Si aucun email admin n'est configuré, on accepte tous les utilisateurs authentifiés (mode dev)
+    if (ADMIN_EMAILS.length === 0) {
+      console.warn("⚠️ ATTENTION: Aucun email admin configuré. Tous les utilisateurs authentifiés ont accès admin.");
+      return true;
+    }
+
+    const isAuthorized = ADMIN_EMAILS.includes(userEmail);
+
+    if (!isAuthorized) {
+      console.warn(`🚫 Accès admin refusé pour: ${userEmail}`);
+    }
+
+    return isAuthorized;
   } catch (error) {
     console.error("Erreur vérification admin:", error);
     return false;

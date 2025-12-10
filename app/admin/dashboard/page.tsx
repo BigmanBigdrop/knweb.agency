@@ -19,6 +19,7 @@ import {
   AlertCircle,
   RefreshCw,
   Loader2,
+  QrCode,
 } from "lucide-react";
 import { signOut, getCurrentUser } from "@/lib/auth";
 import { supabase } from "@/lib/supabase";
@@ -82,55 +83,72 @@ export default function AdminDashboard() {
     return () => subscription.unsubscribe();
   }, [router]);
 
-  // Auto-refresh system for dashboard data
+  // Supabase Realtime subscriptions for dashboard data
   useEffect(() => {
-    console.log("🔄 Setting up auto-refresh system...");
+    console.log("🔄 Setting up Supabase Realtime subscriptions...");
 
-    const refreshData = async () => {
-      try {
-        // Récupérer les messages récents pour détecter de nouveaux messages
-        const { data: currentMessages, error } = await supabase
-          .from("contact_messages")
-          .select("*")
-          .order("created_at", { ascending: false })
-          .limit(5);
-
-        if (error) {
-          console.error("Error fetching messages:", error);
-          return;
+    // S'abonner aux changements sur contact_messages
+    const messagesChannel = supabase
+      .channel("contact_messages_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*", // INSERT, UPDATE, DELETE
+          schema: "public",
+          table: "contact_messages",
+        },
+        (payload) => {
+          console.log("🆕 Contact message change detected:", payload);
+          // Recharger les messages récents et les stats
+          loadRecentMessages();
+          loadDashboardStats();
         }
+      )
+      .subscribe((status) => {
+        console.log("Messages subscription status:", status);
+        setRealtimeStatus(status === "SUBSCRIBED" ? "Connected" : status);
+      });
 
-        if (currentMessages && currentMessages.length > 0) {
-          setRecentMessages((prevMessages) => {
-            // Vérifier s'il y a de nouveaux messages
-            const hasNewMessage =
-              prevMessages.length === 0 ||
-              currentMessages[0].id !== prevMessages[0]?.id;
-
-            if (hasNewMessage) {
-              console.log("🆕 New message detected, updating stats...");
-
-              // Recharger toutes les statistiques quand un nouveau message est détecté
-              loadDashboardStats();
-            }
-
-            return currentMessages;
-          });
+    // S'abonner aux changements sur leads
+    const leadsChannel = supabase
+      .channel("leads_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "leads",
+        },
+        (payload) => {
+          console.log("🆕 Lead change detected:", payload);
+          loadDashboardStats();
         }
+      )
+      .subscribe();
 
-        setRealtimeStatus("Connected");
-      } catch (error) {
-        console.error("Auto-refresh error:", error);
-        setRealtimeStatus("Error");
-      }
-    };
+    // S'abonner aux changements sur starter_offer_slots
+    const slotsChannel = supabase
+      .channel("slots_changes")
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "starter_offer_slots",
+        },
+        (payload) => {
+          console.log("🆕 Slots change detected:", payload);
+          loadDashboardStats();
+        }
+      )
+      .subscribe();
 
-    // Rafraîchir immédiatement puis toutes les 3 secondes
-    refreshData();
-    const refreshInterval = setInterval(refreshData, 3000);
-
+    // Nettoyer les subscriptions à la fin
     return () => {
-      clearInterval(refreshInterval);
+      console.log("🔌 Unsubscribing from Realtime channels...");
+      supabase.removeChannel(messagesChannel);
+      supabase.removeChannel(leadsChannel);
+      supabase.removeChannel(slotsChannel);
     };
   }, []);
 
@@ -544,6 +562,15 @@ export default function AdminDashboard() {
               </div>
             </div>
             <div className="flex items-center gap-3">
+              <Button
+                onClick={() => router.push("/admin/qr-codes")}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2"
+              >
+                <QrCode className="w-4 h-4" />
+                QR Codes
+              </Button>
               <Button
                 onClick={handleRefresh}
                 variant="outline"

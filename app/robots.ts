@@ -1,20 +1,26 @@
-import type { MetadataRoute } from "next";
+import { MetadataRoute } from 'next'
 
 export default function robots(): MetadataRoute.Robots {
+  const baseUrl = 'https://www.knweb.agency'
+  
   return {
     rules: [
       {
-        userAgent: "*",
-        allow: "/",
-        disallow: ["/admin/", "/api/", "/_next/", "/private/", "*.json"],
+        userAgent: '*',
+        allow: '/',
+        disallow: ['/admin/', '/api/'],
       },
       {
-        userAgent: "Googlebot",
-        allow: "/",
-        disallow: ["/admin/", "/api/", "/private/"],
+        userAgent: 'Googlebot',
+        allow: '/',
+        disallow: ['/admin/', '/api/'],
+      },
+      {
+        userAgent: 'Bingbot',
+        allow: '/',
+        disallow: ['/admin/', '/api/'],
       },
     ],
-    sitemap: "https://www.knweb.agency/sitemap.xml",
-    host: "https://www.knweb.agency",
-  };
+    sitemap: `${baseUrl}/sitemap.xml`,
+  }
 }

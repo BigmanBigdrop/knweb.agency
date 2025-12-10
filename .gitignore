@@ -26,3 +26,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# security documentation (contains sensitive info)
+SECURITY.md
+supabase-migration.sql

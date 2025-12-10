@@ -5,10 +5,11 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { logger } from "@/lib/helpers";
+import type { User } from "@supabase/supabase-js";
 
 // Type pour le contexte admin
 type AdminContextType = {
-  user: any | null;
+  user: User | null;
   isLoading: boolean;
 };
 
@@ -23,7 +24,7 @@ export const useAdmin = () => useContext(AdminContext);
 
 // Provider pour le contexte admin
 export function AdminProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<any | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const pathname = usePathname();
 

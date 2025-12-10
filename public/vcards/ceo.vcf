@@ -1,0 +1,16 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Ange M. Kouame
+N:Kouame;Moahe;Ange;Magloire;
+ORG:KN Web Agency
+TITLE:CEO & Responsable Commercial
+TEL;TYPE=CELL:+225 0585471688
+EMAIL;TYPE=INTERNET:contact@knweb.agency
+URL:https://www.knweb.agency
+NOTE:Je transforme vos idées en solutions digitales performantes que vous ne quitterez jamais. Sites Web, Logiciels de Gestion, Transformation Digitale.
+ADR;TYPE=WORK:;;Abidjan;Abidjan;;Côte d'Ivoire
+PHOTO;ENCODING=URI:https://www.knweb.agency/logo.png
+X-SOCIALPROFILE;TYPE=linkedin:https://linkedin.com/in/knwebagency
+X-SOCIALPROFILE;TYPE=github:https://github.com/knwebagency
+X-SOCIALPROFILE;TYPE=twitter:https://twitter.com/knwebagency
+END:VCARD

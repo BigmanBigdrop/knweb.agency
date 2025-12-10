@@ -1,0 +1,16 @@
+BEGIN:VCARD
+VERSION:3.0
+FN:Marshall Christ T. N'Guessan
+N:N'Guessan;Marshall Christ;T.;;
+ORG:KN Web Agency
+TITLE:CTO & Lead Developer
+TEL;TYPE=CELL:+225 0585471688
+EMAIL;TYPE=INTERNET:dev@knweb.agency
+URL:https://www.knweb.agency
+NOTE:J'architece et développe des solutions web robustes et évolutives avec les technologies les plus modernes. Next.js, React 19, Supabase, PostgreSQL, TypeScript.
+ADR;TYPE=WORK:;;Abidjan;Abidjan;;Cocody;Côte d'Ivoire
+PHOTO;ENCODING=URI:https://www.knweb.agency/logo.png
+X-SOCIALPROFILE;TYPE=linkedin:https://linkedin.com/in/knwebagency
+X-SOCIALPROFILE;TYPE=github:https://github.com/knwebagency
+X-SOCIALPROFILE;TYPE=twitter:https://twitter.com/knwebagency
+END:VCARD

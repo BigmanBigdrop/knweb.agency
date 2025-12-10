@@ -1,11 +1,36 @@
-import { createMiddlewareClient } from "@supabase/auth-helpers-nextjs";
+import { createServerClient } from "@supabase/ssr";
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 import { logger } from "@/lib/helpers";
 
+// Liste des emails admin autorisés
+const ADMIN_EMAILS = process.env.NEXT_PUBLIC_ADMIN_EMAILS?.split(',').map(email => email.trim().toLowerCase()) || [];
+
 export async function middleware(req: NextRequest) {
-  const res = NextResponse.next();
-  const supabase = createMiddlewareClient({ req, res });
+  let supabaseResponse = NextResponse.next({
+    request: req,
+  });
+
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return req.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) => req.cookies.set(name, value));
+          supabaseResponse = NextResponse.next({
+            request: req,
+          });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
 
   try {
     // Refresh session if expired - required for Server Components
@@ -22,7 +47,8 @@ export async function middleware(req: NextRequest) {
     // Protect admin routes
     if (
       req.nextUrl.pathname.startsWith("/admin") &&
-      !req.nextUrl.pathname.includes("/login")
+      !req.nextUrl.pathname.includes("/login") &&
+      !req.nextUrl.pathname.includes("/unauthorized")
     ) {
       if (!session) {
         logger.info("Middleware - Redirecting to login (no session)");
@@ -35,9 +61,18 @@ export async function middleware(req: NextRequest) {
         }
 
         return NextResponse.redirect(redirectUrl);
-      } else {
-        logger.info("Middleware - Access granted (session exists)");
       }
+
+      // Vérifier que l'utilisateur est bien admin
+      const userEmail = session.user?.email?.toLowerCase();
+      const isAdmin = ADMIN_EMAILS.length === 0 || (userEmail && ADMIN_EMAILS.includes(userEmail));
+
+      if (!isAdmin) {
+        logger.warn(`Middleware - Access denied for non-admin user: ${userEmail}`);
+        return NextResponse.redirect(new URL("/admin/unauthorized", req.url));
+      }
+
+      logger.info("Middleware - Access granted (admin verified)");
     } else if (req.nextUrl.pathname === "/admin/login" && session) {
       logger.info("Middleware - Redirecting authenticated user from login");
       // Si l'utilisateur est déjà connecté et essaie d'accéder à la page de login, le rediriger vers le dashboard
@@ -46,10 +81,10 @@ export async function middleware(req: NextRequest) {
       return NextResponse.redirect(new URL(returnUrl, req.url));
     }
 
-    return res;
+    return supabaseResponse;
   } catch (error) {
     logger.error("Middleware error", { error });
-    return res;
+    return supabaseResponse;
   }
 }
 
