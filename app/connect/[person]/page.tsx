@@ -11,7 +11,6 @@ import {
   Database,
   Zap,
   ExternalLink,
-  Sparkles,
   Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -136,8 +135,12 @@ export default function ConnectPage({ params }: { params: Promise<{ person: stri
             >
               {/* Logo */}
               <div className="w-24 h-24 mx-auto mb-4 rounded-full bg-white/10 backdrop-blur-sm border-2 border-white/20 flex items-center justify-center overflow-hidden">
-                <div className="w-20 h-20 bg-gradient-to-br from-white to-purple-100 rounded-full flex items-center justify-center">
-                  <span className="text-purple-600 font-bold text-2xl">KN</span>
+                <div className="w-20 h-20 bg-white rounded-full flex items-center justify-center p-2">
+                  <img
+                    src="/kn-logo.png"
+                    alt="KN Web Agency"
+                    className="w-full h-full object-contain"
+                  />
                 </div>
               </div>
 
@@ -166,7 +169,6 @@ export default function ConnectPage({ params }: { params: Promise<{ person: stri
               >
                 <a href={vcardUrl} download>
                   <span className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700"></span>
-                  <Sparkles className="w-5 h-5 mr-2 group-hover:rotate-12 transition-transform" />
                   Enregistrer mon contact
                   <Download className="w-5 h-5 ml-2 group-hover:translate-y-1 transition-transform" />
                 </a>
