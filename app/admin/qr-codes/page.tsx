@@ -34,8 +34,8 @@ export default function QRCodesPage() {
         margin: 2,
         width: 1000, // Haute résolution pour impression
         color: {
-          dark: "#7c3aed", // Purple-600 (couleur de votre brand)
-          light: "#ffffff",
+          dark: "#ffffff", // QR code en blanc
+          light: "#000000", // Fond noir
         },
       };
 
@@ -141,7 +141,7 @@ export default function QRCodesPage() {
                     <li>• Taille recommandée sur carte: 2x2 cm minimum</li>
                     <li>• Format: PNG avec fond transparent possible</li>
                     <li>• Correction d'erreur: Niveau H (permet ajout logo au centre)</li>
-                    <li>• Couleur: Purple (#7c3aed) - Identité KN Web Agency</li>
+                    <li>• Couleur: Blanc sur fond noir (inversé)</li>
                   </ul>
                 </div>
               </div>
@@ -171,7 +171,7 @@ export default function QRCodesPage() {
 
                 <CardContent className="p-6">
                   {/* QR Code Preview */}
-                  <div className="bg-white rounded-xl p-8 mb-6 flex items-center justify-center shadow-inner">
+                  <div className="bg-black rounded-xl p-8 mb-6 flex items-center justify-center shadow-inner">
                     <div className="relative">
                       {/* Hidden canvas for generation */}
                       <canvas
@@ -278,7 +278,7 @@ export default function QRCodesPage() {
                   <ul className="text-sm text-purple-800 dark:text-purple-200 space-y-1">
                     <li>• Testez toujours le QR code avant l'impression finale</li>
                     <li>• Utilisez un papier de qualité (300g minimum)</li>
-                    <li>• Gardez un bon contraste (QR violet sur fond blanc)</li>
+                    <li>• Gardez un bon contraste (QR blanc sur fond noir)</li>
                     <li>• Ne réduisez pas en dessous de 2x2 cm</li>
                   </ul>
                 </div>
